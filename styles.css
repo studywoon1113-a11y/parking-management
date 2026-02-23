@@ -233,25 +233,68 @@ button.mini {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 #mapUpload {
   display: none;
 }
 
+.zoom-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f6f9;
+  border: 1px solid #d1dde4;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+#zoomLabel {
+  display: inline-block;
+  min-width: 48px;
+  text-align: center;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.86rem;
+  color: #294b5c;
+}
+
+.nudge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.nudge-row span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .map-container {
   position: relative;
   border: 1px dashed #a8c1cc;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: auto;
   min-height: 340px;
+  max-height: 72vh;
   background: #f6fafc;
+  -webkit-overflow-scrolling: touch;
 }
 
-.map-container img {
+.map-stage {
+  position: relative;
+  width: 100%;
+  min-width: 100%;
+}
+
+.map-stage img {
   display: block;
   width: 100%;
   height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .marker {
@@ -358,5 +401,10 @@ button.mini {
 
   .hero-stats {
     grid-template-columns: 1fr;
+  }
+
+  .map-container {
+    min-height: 300px;
+    max-height: 68vh;
   }
 }

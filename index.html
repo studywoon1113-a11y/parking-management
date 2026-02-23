@@ -66,18 +66,33 @@
       <div class="map-header">
         <div>
           <h2>주차장 도면</h2>
-          <p class="hint">도면을 클릭하면 해당 날짜에 위치가 저장됩니다.</p>
+          <p class="hint">확대 후 터치하면 더 정확하게 핀을 찍을 수 있습니다.</p>
         </div>
         <div class="map-actions">
           <label class="upload-btn" for="mapUpload">도면 업로드</label>
           <input id="mapUpload" type="file" accept="image/*" />
+          <div class="zoom-controls">
+            <button id="zoomOutBtn" type="button" class="secondary mini">-</button>
+            <span id="zoomLabel">100%</span>
+            <button id="zoomInBtn" type="button" class="secondary mini">+</button>
+          </div>
           <button id="clearMapBtn" type="button" class="secondary">도면 초기화</button>
         </div>
       </div>
 
+      <div class="nudge-row">
+        <span>핀 미세조정</span>
+        <button id="nudgeUpBtn" type="button" class="secondary mini">위</button>
+        <button id="nudgeDownBtn" type="button" class="secondary mini">아래</button>
+        <button id="nudgeLeftBtn" type="button" class="secondary mini">왼쪽</button>
+        <button id="nudgeRightBtn" type="button" class="secondary mini">오른쪽</button>
+      </div>
+
       <div id="mapContainer" class="map-container">
-        <img id="mapImage" alt="주차장 도면" />
-        <div id="marker" class="marker hidden" aria-label="주차 위치"></div>
+        <div id="mapStage" class="map-stage">
+          <img id="mapImage" alt="주차장 도면" />
+          <div id="marker" class="marker hidden" aria-label="주차 위치"></div>
+        </div>
         <div id="emptyState" class="empty-state">
           도면 이미지를 업로드해 주세요.
         </div>

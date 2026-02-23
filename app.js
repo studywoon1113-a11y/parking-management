@@ -13,6 +13,7 @@ const mapUpload = document.getElementById("mapUpload");
 const clearMapBtn = document.getElementById("clearMapBtn");
 const mapImage = document.getElementById("mapImage");
 const mapContainer = document.getElementById("mapContainer");
+const mapStage = document.getElementById("mapStage");
 const marker = document.getElementById("marker");
 const emptyState = document.getElementById("emptyState");
 const saveBtn = document.getElementById("saveBtn");
@@ -21,8 +22,16 @@ const historyList = document.getElementById("historyList");
 const selectedDateLabel = document.getElementById("selectedDateLabel");
 const recordCountLabel = document.getElementById("recordCountLabel");
 const toast = document.getElementById("toast");
+const zoomOutBtn = document.getElementById("zoomOutBtn");
+const zoomInBtn = document.getElementById("zoomInBtn");
+const zoomLabel = document.getElementById("zoomLabel");
+const nudgeUpBtn = document.getElementById("nudgeUpBtn");
+const nudgeDownBtn = document.getElementById("nudgeDownBtn");
+const nudgeLeftBtn = document.getElementById("nudgeLeftBtn");
+const nudgeRightBtn = document.getElementById("nudgeRightBtn");
 
 let toastTimer = null;
+let zoomLevel = 1;
 
 function todayLocalDate() {
   const now = new Date();
@@ -55,6 +64,20 @@ function showToast(message) {
   toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
   }, 1800);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function applyZoom() {
+  mapStage.style.width = `${Math.round(zoomLevel * 100)}%`;
+  zoomLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
+}
+
+function setZoom(nextZoom) {
+  zoomLevel = clamp(Number(nextZoom.toFixed(2)), 1, 3);
+  applyZoom();
 }
 
 function setMapImage(src) {
@@ -135,6 +158,26 @@ function renderDate() {
   renderSummary();
 }
 
+function nudgeCurrentPin(dx, dy) {
+  const existing = currentRecord();
+  if (!existing || typeof existing.x !== "number" || typeof existing.y !== "number") {
+    showToast("먼저 도면에서 위치를 찍어 주세요.");
+    return;
+  }
+
+  state.records[dateInput.value] = {
+    ...existing,
+    x: Number(clamp(existing.x + dx, 0, 100).toFixed(2)),
+    y: Number(clamp(existing.y + dy, 0, 100).toFixed(2)),
+    floor: floorInput.value.trim(),
+    memo: memoInput.value.trim(),
+    updatedAt: new Date().toISOString(),
+  };
+  saveState();
+  renderDate();
+  renderHistory();
+}
+
 function saveCurrentRecord() {
   if (!state.mapImageDataUrl) {
     showToast("먼저 주차장 도면 이미지를 업로드해 주세요.");
@@ -175,7 +218,7 @@ function deleteCurrentRecord() {
 
 function handleMapClick(event) {
   if (!state.mapImageDataUrl) return;
-  const rect = mapContainer.getBoundingClientRect();
+  const rect = mapStage.getBoundingClientRect();
   const x = ((event.clientX - rect.left) / rect.width) * 100;
   const y = ((event.clientY - rect.top) / rect.height) * 100;
   state.records[dateInput.value] = {
@@ -206,7 +249,13 @@ function init() {
   });
   saveBtn.addEventListener("click", saveCurrentRecord);
   deleteBtn.addEventListener("click", deleteCurrentRecord);
-  mapContainer.addEventListener("click", handleMapClick);
+  mapStage.addEventListener("click", handleMapClick);
+  zoomInBtn.addEventListener("click", () => setZoom(zoomLevel + 0.25));
+  zoomOutBtn.addEventListener("click", () => setZoom(zoomLevel - 0.25));
+  nudgeUpBtn.addEventListener("click", () => nudgeCurrentPin(0, -0.4));
+  nudgeDownBtn.addEventListener("click", () => nudgeCurrentPin(0, 0.4));
+  nudgeLeftBtn.addEventListener("click", () => nudgeCurrentPin(-0.4, 0));
+  nudgeRightBtn.addEventListener("click", () => nudgeCurrentPin(0.4, 0));
 
   mapUpload.addEventListener("change", () => {
     const file = mapUpload.files?.[0];
@@ -226,6 +275,8 @@ function init() {
     mapUpload.value = "";
     showToast("도면 이미지를 초기화했습니다.");
   });
+
+  applyZoom();
 }
 
 init();
