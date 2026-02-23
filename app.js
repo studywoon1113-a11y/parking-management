@@ -22,17 +22,21 @@ const historyList = document.getElementById("historyList");
 const selectedDateLabel = document.getElementById("selectedDateLabel");
 const recordCountLabel = document.getElementById("recordCountLabel");
 const toast = document.getElementById("toast");
-const zoomOutBtn = document.getElementById("zoomOutBtn");
-const zoomInBtn = document.getElementById("zoomInBtn");
-const zoomLabel = document.getElementById("zoomLabel");
 const nudgeUpBtn = document.getElementById("nudgeUpBtn");
 const nudgeDownBtn = document.getElementById("nudgeDownBtn");
 const nudgeLeftBtn = document.getElementById("nudgeLeftBtn");
 const nudgeRightBtn = document.getElementById("nudgeRightBtn");
 
 let toastTimer = null;
-let zoomLevel = 1;
 let lastPointerStamp = 0;
+const touchState = {
+  active: false,
+  multi: false,
+  moved: false,
+  startX: 0,
+  startY: 0,
+  startTime: 0,
+};
 
 function todayLocalDate() {
   const now = new Date();
@@ -69,16 +73,6 @@ function showToast(message) {
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
-}
-
-function applyZoom() {
-  mapStage.style.width = `${Math.round(zoomLevel * 100)}%`;
-  zoomLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
-}
-
-function setZoom(nextZoom) {
-  zoomLevel = clamp(Number(nextZoom.toFixed(2)), 1, 3);
-  applyZoom();
 }
 
 function setMapImage(src) {
@@ -241,25 +235,57 @@ function placePinAt(clientX, clientY) {
 }
 
 function handleMapPointerUp(event) {
+  if (event.pointerType === "touch") return;
   lastPointerStamp = Date.now();
   placePinAt(event.clientX, event.clientY);
 }
 
+function handleMapTouchStart(event) {
+  if (!event.touches) return;
+  if (event.touches.length !== 1) {
+    touchState.active = false;
+    touchState.multi = true;
+    return;
+  }
+  const touch = event.touches[0];
+  touchState.active = true;
+  touchState.multi = false;
+  touchState.moved = false;
+  touchState.startX = touch.clientX;
+  touchState.startY = touch.clientY;
+  touchState.startTime = Date.now();
+}
+
+function handleMapTouchMove(event) {
+  if (!touchState.active || !event.touches || event.touches.length !== 1) {
+    touchState.multi = true;
+    touchState.active = false;
+    return;
+  }
+  const touch = event.touches[0];
+  const dx = Math.abs(touch.clientX - touchState.startX);
+  const dy = Math.abs(touch.clientY - touchState.startY);
+  if (dx > 10 || dy > 10) touchState.moved = true;
+}
+
 function handleMapTouchEnd(event) {
   const touch = event.changedTouches?.[0];
-  if (!touch) return;
+  const duration = Date.now() - touchState.startTime;
+  const shouldPlace = touchState.active && !touchState.multi && !touchState.moved && duration < 350 && !!touch;
+
+  touchState.active = false;
+  touchState.multi = false;
+  touchState.moved = false;
+
+  if (!shouldPlace) return;
   lastPointerStamp = Date.now();
   placePinAt(touch.clientX, touch.clientY);
 }
 
-function handleMapTouchStart(event) {
-  // Mobile Safari/Chrome can swallow click in scrollable containers.
-  // Place immediately on single-finger tap for reliable pinning.
-  if (!event.touches || event.touches.length !== 1) return;
-  const touch = event.touches[0];
-  lastPointerStamp = Date.now();
-  placePinAt(touch.clientX, touch.clientY);
-  event.preventDefault();
+function handleMapTouchCancel() {
+  touchState.active = false;
+  touchState.multi = false;
+  touchState.moved = false;
 }
 
 function handleMapClick(event) {
@@ -282,11 +308,11 @@ function init() {
   saveBtn.addEventListener("click", saveCurrentRecord);
   deleteBtn.addEventListener("click", deleteCurrentRecord);
   mapContainer.addEventListener("pointerup", handleMapPointerUp);
-  mapContainer.addEventListener("touchstart", handleMapTouchStart, { passive: false });
+  mapContainer.addEventListener("touchstart", handleMapTouchStart, { passive: true });
+  mapContainer.addEventListener("touchmove", handleMapTouchMove, { passive: true });
   mapContainer.addEventListener("touchend", handleMapTouchEnd, { passive: true });
+  mapContainer.addEventListener("touchcancel", handleMapTouchCancel, { passive: true });
   mapContainer.addEventListener("click", handleMapClick);
-  zoomInBtn.addEventListener("click", () => setZoom(zoomLevel + 0.25));
-  zoomOutBtn.addEventListener("click", () => setZoom(zoomLevel - 0.25));
   nudgeUpBtn.addEventListener("click", () => nudgeCurrentPin(0, -0.4));
   nudgeDownBtn.addEventListener("click", () => nudgeCurrentPin(0, 0.4));
   nudgeLeftBtn.addEventListener("click", () => nudgeCurrentPin(-0.4, 0));
@@ -310,8 +336,6 @@ function init() {
     mapUpload.value = "";
     showToast("도면 이미지를 초기화했습니다.");
   });
-
-  applyZoom();
 }
 
 init();

@@ -240,25 +240,6 @@ button.mini {
   display: none;
 }
 
-.zoom-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #f0f6f9;
-  border: 1px solid #d1dde4;
-  border-radius: 10px;
-  padding: 4px;
-}
-
-#zoomLabel {
-  display: inline-block;
-  min-width: 48px;
-  text-align: center;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 0.86rem;
-  color: #294b5c;
-}
-
 .nudge-row {
   display: flex;
   align-items: center;
@@ -281,14 +262,12 @@ button.mini {
   max-height: 72vh;
   background: #f6fafc;
   -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
 }
 
 .map-stage {
   position: relative;
   width: 100%;
   min-width: 100%;
-  touch-action: manipulation;
 }
 
 .map-stage img {
