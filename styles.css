@@ -295,10 +295,13 @@ button.mini {
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
+  position: relative;
+  z-index: 1;
 }
 
 .marker {
   position: absolute;
+  z-index: 5;
   width: 24px;
   height: 24px;
   background: #d92d20;

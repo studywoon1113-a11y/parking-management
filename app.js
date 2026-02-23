@@ -32,6 +32,7 @@ const nudgeRightBtn = document.getElementById("nudgeRightBtn");
 
 let toastTimer = null;
 let zoomLevel = 1;
+let lastPointerStamp = 0;
 
 function todayLocalDate() {
   const now = new Date();
@@ -102,12 +103,14 @@ function currentRecord() {
 function renderMarker(record) {
   if (!record || typeof record.x !== "number" || typeof record.y !== "number") {
     marker.classList.add("hidden");
+    marker.style.display = "";
     return;
   }
 
   marker.style.left = `${record.x}%`;
   marker.style.top = `${record.y}%`;
   marker.classList.remove("hidden");
+  marker.style.display = "block";
 }
 
 function renderFields(record) {
@@ -216,14 +219,16 @@ function deleteCurrentRecord() {
   showToast("기록을 삭제했습니다.");
 }
 
-function handleMapClick(event) {
+function placePinAt(clientX, clientY) {
   if (!state.mapImageDataUrl) return;
-  const rect = mapStage.getBoundingClientRect();
-  const x = ((event.clientX - rect.left) / rect.width) * 100;
-  const y = ((event.clientY - rect.top) / rect.height) * 100;
+  const rect = mapImage.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
+  if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return;
+  const x = ((clientX - rect.left) / rect.width) * 100;
+  const y = ((clientY - rect.top) / rect.height) * 100;
   state.records[dateInput.value] = {
-    x: Number(x.toFixed(2)),
-    y: Number(y.toFixed(2)),
+    x: Number(clamp(x, 0, 100).toFixed(2)),
+    y: Number(clamp(y, 0, 100).toFixed(2)),
     floor: floorInput.value.trim(),
     memo: memoInput.value.trim(),
     updatedAt: new Date().toISOString(),
@@ -233,6 +238,23 @@ function handleMapClick(event) {
   renderHistory();
   renderSummary();
   showToast("위치가 지정되었습니다. 저장 버튼으로 확정하세요.");
+}
+
+function handleMapPointerUp(event) {
+  lastPointerStamp = Date.now();
+  placePinAt(event.clientX, event.clientY);
+}
+
+function handleMapTouchEnd(event) {
+  const touch = event.changedTouches?.[0];
+  if (!touch) return;
+  lastPointerStamp = Date.now();
+  placePinAt(touch.clientX, touch.clientY);
+}
+
+function handleMapClick(event) {
+  if (Date.now() - lastPointerStamp < 350) return;
+  placePinAt(event.clientX, event.clientY);
 }
 
 function init() {
@@ -249,7 +271,9 @@ function init() {
   });
   saveBtn.addEventListener("click", saveCurrentRecord);
   deleteBtn.addEventListener("click", deleteCurrentRecord);
-  mapStage.addEventListener("click", handleMapClick);
+  mapContainer.addEventListener("pointerup", handleMapPointerUp);
+  mapContainer.addEventListener("touchend", handleMapTouchEnd, { passive: true });
+  mapContainer.addEventListener("click", handleMapClick);
   zoomInBtn.addEventListener("click", () => setZoom(zoomLevel + 0.25));
   zoomOutBtn.addEventListener("click", () => setZoom(zoomLevel - 0.25));
   nudgeUpBtn.addEventListener("click", () => nudgeCurrentPin(0, -0.4));
