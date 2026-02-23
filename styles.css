@@ -283,8 +283,8 @@ button.mini {
 .marker {
   position: absolute;
   z-index: 5;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   background: #d92d20;
   border: 2px solid #fff;
   border-radius: 50% 50% 50% 0;
@@ -295,12 +295,12 @@ button.mini {
 .marker::after {
   content: "";
   position: absolute;
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   background: #fff;
   border-radius: 50%;
-  top: 7px;
-  left: 7px;
+  top: 5px;
+  left: 5px;
 }
 
 .hidden {
