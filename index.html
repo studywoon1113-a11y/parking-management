@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parking Spot Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <header class="hero card fade-up">
+      <div>
+        <p class="eyebrow">Parking Manager</p>
+        <h1>내 주차 위치 기록</h1>
+        <p class="hero-copy">아파트 주차장 도면에서 오늘 위치를 찍고, 다음날 바로 찾아가세요.</p>
+      </div>
+      <div class="hero-stats">
+        <article class="stat">
+          <span class="stat-label">선택 날짜</span>
+          <strong id="selectedDateLabel" class="stat-value">-</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-label">누적 기록</span>
+          <strong id="recordCountLabel" class="stat-value">0</strong>
+        </article>
+      </div>
+    </header>
+
+    <section class="panel-grid">
+      <section class="card controls fade-up delay-1">
+        <h2>기록 입력</h2>
+        <div class="field-group">
+          <label for="dateInput">날짜</label>
+          <div class="inline-row">
+            <input id="dateInput" type="date" />
+            <button id="todayBtn" type="button" class="secondary mini">오늘</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="floorInput">층/구역</label>
+          <input id="floorInput" type="text" placeholder="예: B2 C-17" />
+        </div>
+
+        <div class="field-group note">
+          <label for="memoInput">메모</label>
+          <input id="memoInput" type="text" placeholder="예: 엘리베이터 3번 앞" />
+        </div>
+
+        <div class="button-row">
+          <button id="saveBtn" type="button">이 날짜에 저장</button>
+          <button id="deleteBtn" type="button" class="secondary">이 날짜 기록 삭제</button>
+        </div>
+      </section>
+
+      <section class="card history fade-up delay-2">
+        <h2>최근 기록</h2>
+        <ul id="historyList"></ul>
+      </section>
+    </section>
+
+    <section class="card map-section fade-up delay-3">
+      <div class="map-header">
+        <div>
+          <h2>주차장 도면</h2>
+          <p class="hint">도면을 클릭하면 해당 날짜에 위치가 저장됩니다.</p>
+        </div>
+        <div class="map-actions">
+          <label class="upload-btn" for="mapUpload">도면 업로드</label>
+          <input id="mapUpload" type="file" accept="image/*" />
+          <button id="clearMapBtn" type="button" class="secondary">도면 초기화</button>
+        </div>
+      </div>
+
+      <div id="mapContainer" class="map-container">
+        <img id="mapImage" alt="주차장 도면" />
+        <div id="marker" class="marker hidden" aria-label="주차 위치"></div>
+        <div id="emptyState" class="empty-state">
+          도면 이미지를 업로드해 주세요.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
