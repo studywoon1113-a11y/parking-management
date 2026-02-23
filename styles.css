@@ -281,12 +281,14 @@ button.mini {
   max-height: 72vh;
   background: #f6fafc;
   -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
 }
 
 .map-stage {
   position: relative;
   width: 100%;
   min-width: 100%;
+  touch-action: manipulation;
 }
 
 .map-stage img {

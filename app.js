@@ -252,6 +252,16 @@ function handleMapTouchEnd(event) {
   placePinAt(touch.clientX, touch.clientY);
 }
 
+function handleMapTouchStart(event) {
+  // Mobile Safari/Chrome can swallow click in scrollable containers.
+  // Place immediately on single-finger tap for reliable pinning.
+  if (!event.touches || event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  lastPointerStamp = Date.now();
+  placePinAt(touch.clientX, touch.clientY);
+  event.preventDefault();
+}
+
 function handleMapClick(event) {
   if (Date.now() - lastPointerStamp < 350) return;
   placePinAt(event.clientX, event.clientY);
@@ -272,6 +282,7 @@ function init() {
   saveBtn.addEventListener("click", saveCurrentRecord);
   deleteBtn.addEventListener("click", deleteCurrentRecord);
   mapContainer.addEventListener("pointerup", handleMapPointerUp);
+  mapContainer.addEventListener("touchstart", handleMapTouchStart, { passive: false });
   mapContainer.addEventListener("touchend", handleMapTouchEnd, { passive: true });
   mapContainer.addEventListener("click", handleMapClick);
   zoomInBtn.addEventListener("click", () => setZoom(zoomLevel + 0.25));
